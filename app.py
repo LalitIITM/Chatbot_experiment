@@ -12,7 +12,6 @@ import yaml
 from pptx import Presentation
 from zipfile import ZipFile
 import mimetypes 
-import tempfile
 from langchain_groq import ChatGroq
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.chains import ConversationalRetrievalChain
@@ -199,19 +198,23 @@ if vector_store is None:
     raise ValueError("Failed to initialize vector_store. Ensure hidden_docs folder and embeddings setup are correct.")
 ##### my email lalitmach22@gmail.com
 # Validate email
+
+email_regex = re.compile(r"^\d{2}f\d{7}@ds\.study\.iitm\.ac\.in$")
+
+# Validate email
 def is_valid_email(email):
-    email_regex = r"^\d{2}f\d{7}@ds\.study\.iitm\.ac\.in$"
-    return re.match(email_regex, email) is not None or email == "nitin@ee.iitm.ac.in"
+    return email_regex.match(email) is not None or email == "nitin@ee.iitm.ac.in"
 
 # Save session to Supabase
 def save_session_to_supabase(email, name, chat_history):
     # Define IST timezone
     ist = pytz.timezone("Asia/Kolkata")
     
+    # Get current datetime in IST and format as "YYYY-MM-DD HH:MM"
+    timestamp = datetime.now(ist).strftime("%Y-%m-%d %H:%M")
+    
+    data_list = []
     for question, answer in chat_history:
-        # Get current datetime in IST and format as "YYYY-MM-DD HH:MM"
-        timestamp = datetime.now(ist).strftime("%Y-%m-%d %H:%M")
-        
         data = {
             "email": email,
             "name": name if name else None,
@@ -219,10 +222,12 @@ def save_session_to_supabase(email, name, chat_history):
             "answer": answer,
             "timestamp": timestamp,  # Add IST timestamp
         }
-        response = supabase.table("chat_sessions_1").insert(data).execute()
-        if "error" in response:
-            st.error(f"Error saving session data to Supabase: {response['error']['message']}")
-            return False
+        data_list.append(data)
+    
+    response = supabase.table("chat_sessions_1").insert(data_list).execute()
+    if "error" in response:
+        st.error(f"Error saving session data to Supabase: {response['error']['message']}")
+        return False
     return True
 
 
@@ -328,5 +333,5 @@ if st.session_state["email_validated"]:
                     st.markdown(f"**Chatbot:** {reply}")
             
             
-
+#C:\Users\Dell\Documents\GitHub\Chatbot_experiment\Chatbot_experiment\app.py
 
