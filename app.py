@@ -152,6 +152,7 @@ def save_to_supabase(all_texts):
             
 # Load documents and save to Supabase
 all_texts = load_hidden_documents()
+print(f"texts extracted is of length  {len(all_texts)}")
 save_to_supabase(all_texts)
 
 # Create vector store
@@ -178,6 +179,7 @@ def reload_vector_store_if_needed():
     if "file_mod_times" not in st.session_state or st.session_state["file_mod_times"] != current_mod_times:
         st.session_state["file_mod_times"] = current_mod_times
         document_texts = load_hidden_documents()
+        print(f"texts extracted is of length  {len(document_texts)}")
         vector_store = create_vector_store(document_texts)  # Create vector store
         st.session_state["vector_store"] = vector_store    # Save in session state
     else:
